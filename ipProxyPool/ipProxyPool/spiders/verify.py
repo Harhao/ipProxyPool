@@ -4,11 +4,7 @@ import urllib.parse
 from time import sleep
 import logging
 import multiprocessing
-MONGO_URI=''
-MONGO_DATABASE=''
-MONGO_USER=""
-MONGO_PASS=""
-MONGO_PORT=
+from .setttings import *
 COLLECTION_NAME="ipProxy"
 class mongoOperate(object):
     def __init__(self,MONGO_URI,MONGO_DB,MONGO_USER,MONGO_PASS,MONGO_PORT,COLLECTION_NAME):
