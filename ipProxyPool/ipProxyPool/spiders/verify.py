@@ -48,7 +48,7 @@ class mongoOperate(object):
         except Exception as e:
             self.db[self.collectionName].remove({'ip_addr': item['ip_addr']})
             return "invalid IP Exception"
-def main(self):
+def main():
     try:
         mongoObj=mongoOperate(MONGO_URI,MONGO_DATABASE,MONGO_USER,MONGO_PASS,MONGO_PORT,COLLECTION_NAME)
         mongoObj.connect()
