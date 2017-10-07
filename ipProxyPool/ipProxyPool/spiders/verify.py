@@ -1,10 +1,9 @@
-__author__ = 'Administrator'
-# 操作主要有关的数据库
 import pymongo
 from urllib import request
 import urllib.parse
 from time import sleep
 import logging
+import multiprocessing
 MONGO_URI=''
 MONGO_DATABASE=''
 MONGO_USER=""
@@ -20,18 +19,17 @@ class mongoOperate(object):
         self.mongo_pass=MONGO_PASS
         self.collectionName=COLLECTION_NAME
     def connect(self):
-        client=pymongo.MongoClient(host=self.mongo_uri,port=self.mongo_port)
-        db=client[self.mongo_db]
-        db.authenticate(self.mongo_user,self.mongo_pass)
-        self.collection=db[self.collectionName]
+        self.client=pymongo.MongoClient(host=self.mongo_uri,port=self.mongo_port)
+        self.db=self.client[self.mongo_db]
+        self.db.authenticate(self.mongo_user,self.mongo_pass)
     def insertData(self,data):
-        return self.collection.insert(data)
+        return self.db[self.collectionName].insert(data)
     def find_Data(self):
-        return self.collection.find({})
+        return self.db[self.collectionName].find({})
     def updateData(self,condition,data):
-        return self.collection.update(condition,data)
+        return self.db[self.collectionName].update(condition,data)
     def removeData(self,condition):
-        return self.collection.remove(condition)
+        return self.db[self.collectionName].remove(condition)
     def verifyIP(self,item):
         ip=item["wholeIP"]
         testUrl="http://www.baidu.com"
@@ -42,20 +40,51 @@ class mongoOperate(object):
         urllib.request.install_opener(opener)
         try:
             res=urllib.request.urlopen(testUrl,timeout=5).read()
-            if len(res)==0:
-                self.db[self.collection_name].remove({'ip_addr': item['ip_addr']})
-        except Exception as e:
-            logging.debug(e)
-if __name__=="__main__":
-    mongoObj=mongoOperate(MONGO_URI,MONGO_DATABASE,MONGO_USER,MONGO_PASS,MONGO_PORT,COLLECTION_NAME)
-    mongoObj.connect()
-    while True:
-        ipItems=mongoObj.find_Data()
-        for ipItem in ipItems:
-            if ipItem:
-                mongoObj.verifyIP(ipItem)
-                logging.info("verifying......")
+            if res.status_code==200:
+                return "valid IP"
             else:
+                self.db[self.collectionName].remove({'ip_addr': item['ip_addr']})
+                return "invalid IP"
+        except Exception as e:
+            self.db[self.collectionName].remove({'ip_addr': item['ip_addr']})
+            return "invalid IP Exception"
+def main(self):
+    try:
+        mongoObj=mongoOperate(MONGO_URI,MONGO_DATABASE,MONGO_USER,MONGO_PASS,MONGO_PORT,COLLECTION_NAME)
+        mongoObj.connect()
+        print(mongoObj.find_Data())
+        while True:
+            ipItems=mongoObj.find_Data()
+            if ipItems:
+                for ipItem in ipItems:
+                    if ipItem:
+                        tips=mongoObj.verifyIP(ipItem)
+                        print(tips)
+                    else:
+                        break
+            else:
+                print("no ip  data!!")
                 break
-        sleep(10)
+            sleep(5)
+    except Exception as e:
+        print(e)
 
+if __name__=="__main__":
+    print("start verify")
+    # p1 = multiprocessing.Process(target=main, args=('test1',))
+    # p2 = multiprocessing.Process(target=main, args=('test2',))
+    # p3 = multiprocessing.Process(target=main, args=('test3',))
+    # p1.start()
+    # p2.start()
+    # p3.start()
+    # p1.join()
+    # p2.join()
+    # p3.join()
+    p=multiprocessing.Pool(4)
+    for i in range(5):
+        p.apply_async(main, args=(i,))
+    p.close()
+    p.join()
+    print("all proccess is ended")
+
+    

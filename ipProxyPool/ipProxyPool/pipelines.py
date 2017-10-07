@@ -26,23 +26,24 @@ class IpproxypoolPipeline(object):
     def close_spider(self, spider):
         self.client.close()
     def process_item(self, item, spider):
-        self.verifyIP(item)
-        # self.db[self.collection_name].insert(dict(item))
-        # return item]
-    def verifyIP(self,item):
-        ip=item["wholeIP"]
-        testUrl="http://www.baidu.com"
-        userAgent='Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
-        proxy_support=urllib.request.ProxyHandler({"http":ip})
-        opener=urllib.request.build_opener(proxy_support)
-        opener.addheaders=[("User-Agent",userAgent)]
-        urllib.request.install_opener(opener)
-        try:
-            res=urllib.request.urlopen(testUrl,timeout=5).read()
-            if len(res)!=0:
-                self.db[self.collection_name].update({'ip_addr': item['ip_addr']}, {'$set': dict(item)}, True)
-                return item
-            else:
-                return False
-        except Exception as e:
-            logging.debug(e)
+        # self.verifyIP(item)
+        self.db[self.collection_name].insert(dict(item))
+        return item
+    # def verifyIP(self,item):
+    #     ip=item["wholeIP"]
+    #     testUrl="http://www.baidu.com"
+    #     userAgent='Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36'
+    #     proxy_support=urllib.request.ProxyHandler({"http":ip})
+    #     opener=urllib.request.build_opener(proxy_support)
+    #     opener.addheaders=[("User-Agent",userAgent)]
+    #     urllib.request.install_opener(opener)
+    #     try:
+    #         res=urllib.request.urlopen(testUrl,timeout=5).read()
+    #         if len(res)!=0:
+    #             #self.db[self.collection_name].update({'ip_addr': item['ip_addr']}, {'$set': dict(item)}, True)
+    #             self.db[self.collection_name].insert(dict(item))
+    #             return item
+    #         else:
+    #             return False
+    #     except Exception as e:
+    #         logging.debug(e)

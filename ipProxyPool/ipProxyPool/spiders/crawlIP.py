@@ -9,9 +9,9 @@ class CrawlipSpider(Spider):
     start_urls = ['http://www.xicidaili.com/nn/']
 
     def parse(self, response):
-        # lastPageNum=response.xpath("//*[@id='body']/div[2]/a[10]/text()").extract_first()
-        # lastPageNum=int(lastPageNum)
-        for i in range(1062):
+        lastPageNum=response.xpath("//*[@id='body']/div[2]/a[10]/text()").extract_first()
+        lastPageNum=int(lastPageNum)
+        for i in range(lastPageNum):
             num=i+1
             sleep(2)
             yield Request(url=response.url+str(num),callback=self.parse_info,dont_filter=True)
